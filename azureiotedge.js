@@ -257,6 +257,7 @@ module.exports = function (RED) {
                     {method: method, response: msg.payload, status: msg.status}
                 );
                 node.log("Module Method response set through node input: " + JSON.stringify(methodResponses.find(function(m){return m.method === method}))); 
+                // node.log("Module Method response set through node input: " + JSON.stringify(methodResponses.find( m => m.method === method ))); 
             });
         })
         .catch(function(err){

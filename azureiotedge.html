@@ -1,9 +1,11 @@
 <script type="text/javascript">
-    RED.nodes.registerType('moduleclient',{
+    RED.nodes.registerType('moduleclient', {
         category: 'config',
         color: '#a6bbcf',
         defaults: {
-            module: {value: ""}
+            module: {
+                value: ""
+            }
         },
         label: function() {
             return "Module Client";
@@ -12,28 +14,32 @@
 </script>
 
 <script type="text/x-red" data-template-name="moduleclient">
-    <p>Azure IoT Edge Module Client creates the connection with the Azure IoT Edge module using Node-Red.</p>
+    <p>You do not need to set any properties for this client to be configured. See the "Help" for this node to learn more.</p>
 </script>
 
 <script type="text/x-red" data-help-name="moduleclient">
-    <p>Azure IoT Edge Module Client creates the connection with the Azure IoT Edge module using Node-Red. Node-Red needs to run as a module in Azure IoT Edge for this nod to work.</p>
-    <p>The client will be used by the other nodes to establish the connection with edgeHub.The response defines what the method will send as a return to the IoT Hub.</p>
+    <p>This moduleclient configuration node automatically creates the connection with Azure IoT Edge running on the host system. To do this, the <code>IOTEDGE_WORKLOADURI</code> environment variable needs to be available, which is normally true when running within Azure IoT Edge.</p>
+    <p>This configuration will be used by the other nodes in this package to interact with Azure IoT Hub.</p>
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType('moduletwin',{
+    RED.nodes.registerType('moduletwin', {
         category: 'Azure IoT Edge',
         color: '#a6bbcf',
         defaults: {
-            client: {value:"",type:"moduleclient",required:true}
+            client: {
+                value: "",
+                type: "moduleclient",
+                required: true
+            }
         },
-        inputs:1,
-        outputs:1,
+        inputs: 1,
+        outputs: 1,
         icon: "azureiotedge.png",
         label: function() {
             return "Module Twin";
         },
-        paletteLabel: function(){
+        paletteLabel: function() {
             return "Module Twin";
         },
     });
@@ -52,20 +58,27 @@
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType('moduleinput',{
+    RED.nodes.registerType('moduleinput', {
         category: 'Azure IoT Edge',
         color: '#a6bbcf',
         defaults: {
-            client: {value:"",type:"moduleclient", required:true},
-            input: {value:"", required:true}
+            client: {
+                value: "",
+                type: "moduleclient",
+                required: true
+            },
+            input: {
+                value: "",
+                required: true
+            }
         },
-        inputs:0,
-        outputs:1,
+        inputs: 0,
+        outputs: 1,
         icon: "azureiotedge.png",
         label: function() {
-            return "Module Input: "+this.input;
+            return "Module Input: " + this.input;
         },
-        paletteLabel: function(){
+        paletteLabel: function() {
             return "Module Input";
         },
     });
@@ -88,20 +101,27 @@
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType('moduleoutput',{
+    RED.nodes.registerType('moduleoutput', {
         category: 'Azure IoT Edge',
         color: '#a6bbcf',
         defaults: {
-            client: {value:"",type:"moduleclient",required:true},
-            output: {value:"", required:true}
+            client: {
+                value: "",
+                type: "moduleclient",
+                required: true
+            },
+            output: {
+                value: "",
+                required: true
+            }
         },
         inputs:1,
         outputs:0,
         icon: "azureiotedge.png",
         label: function() {
-            return "Module Output: "+this.output;
+            return "Module Output: " + this.output;
         },
-        paletteLabel: function(){
+        paletteLabel: function() {
             return "Module Output";
         },
     });
@@ -124,20 +144,27 @@
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType('modulemethod',{
+    RED.nodes.registerType('modulemethod', {
         category: 'Azure IoT Edge',
         color: '#a6bbcf',
         defaults: {
-            client: {value:"",type:"moduleclient",required:true},
-            method: {value:"", required:true}
+            client: {
+                value: "",
+                type: "moduleclient",
+                required: true
+            },
+            method: {
+                value: "",
+                required: true
+            }
         },
-        inputs:1,
-        outputs:1,
+        inputs: 1,
+        outputs: 1,
         icon: "azureiotedge.png",
         label: function() {
-            return "Module Method: "+this.method;
+            return "Module Method: " + this.method;
         },
-        paletteLabel: function(){
+        paletteLabel: function() {
             return "Module Method";
         },
     });

@@ -224,6 +224,7 @@ module.exports = function(RED) {
                     }
 
                     getResponse(node).then(function(rspns) {
+                            node.log(`rspns: ${JSON.stringify(rspns)}`)
                             var responseBody;
                             if (typeof(rspns.response) != "string") {
                                 // Turn message object into string 
@@ -233,14 +234,14 @@ module.exports = function(RED) {
                             }
                             response.send(rspns.status, responseBody, function(err) {
                                 if (err) {
-                                    node.log('Failed sending method response: ' + err);
+                                    node.log(`Failure in response.send(): ${err}`);
                                 } else {
                                     node.log('Successfully sent method response.');
                                 }
                             });
                         })
                         .catch(function(err) {
-                            node.log("Failed sending method response: response not received.");
+                            node.log(`Failure in getResponse().then(): ${err}`);
                         });
                     // reset response
                     node.response = null;

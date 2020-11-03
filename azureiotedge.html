@@ -18,7 +18,8 @@
 </script>
 
 <script type="text/x-red" data-help-name="moduleclient">
-    <p>This moduleclient configuration node automatically creates the connection with Azure IoT Edge running on the host system. To do this, the <code>IOTEDGE_WORKLOADURI</code> environment variable needs to be available, which is normally true when running within Azure IoT Edge.</p>
+    <p>This moduleclient configuration node automatically creates the connection with Azure IoT Edge running on the host system. To do this, the <code>IOTEDGE_WORKLOADURI</code> environment variable needs to be available, which is normally true when running
+        within Azure IoT Edge.</p>
     <p>This configuration will be used by the other nodes in this package to interact with Azure IoT Hub.</p>
 </script>
 
@@ -96,7 +97,7 @@
 </script>
 
 <script type="text/x-red" data-help-name="moduleinput">
-    <p>Azure IoT Edge Module Input receives input from Azure IoT Edge edgeHub using Node-Red. Node-Red needs to run as a module in Azure IoT Edge for this nod to work.</p>
+    <p>Azure IoT Edge Module Input receives input from Azure IoT Hub by means of running in a Node-RED instance that is running as a module in an Azure IoT Edge deployment.</p>
     <p>The input setting will determine which input it is listening for. This input also needs to be used within the IoT Edge routing.</p>
 </script>
 
@@ -115,8 +116,8 @@
                 required: true
             }
         },
-        inputs:1,
-        outputs:0,
+        inputs: 1,
+        outputs: 0,
         icon: "azureiotedge.png",
         label: function() {
             return "Module Output: " + this.output;
@@ -139,7 +140,7 @@
 </script>
 
 <script type="text/x-red" data-help-name="moduleoutput">
-    <p>Azure IoT Edge Module Output enable you to send messages to Azure IoT Edge edgeHub using Node-Red. Node-Red needs to run as a module in Azure IoT Edge for this nod to work.</p>
+    <p>Azure IoT Edge Module Output enables you to send messages to an Azure IoT Hub by means of running in a Node-RED instance that is running as a module in an Azure IoT Edge deployment.</p>
     <p>The output setting will determine which output will be used. This output also needs to be used within the IoT Edge routing.</p>
 </script>
 
@@ -182,6 +183,7 @@
 </script>
 
 <script type="text/x-red" data-help-name="modulemethod">
-    <p>Azure IoT Edge Module Method enable you to send methods to Azure IoT Edge module using Node-Red. Node-Red needs to run as a module in Azure IoT Edge for this nod to work.</p>
-    <p>The method setting will determine what method you can use used.The response defines what the method will send as a return to the IoT Hub.</p>
+    <p>Azure IoT Edge Module Method node enables you to respond to methods sent by Azure IoT Hub by means of running in a Node-RED instance that is running as a module in an Azure IoT Edge deployment.</p>
+    <p>The "method" setting will determine what method request this node is listening for and expecting to respond to. This will be availble at this node’s output.</p>
+    <p>This node’s input is what will be sent as the return to the IoT Hub.</p>
 </script>

@@ -34,15 +34,35 @@ The Module Input needs a connection to a Module Client and the name of the "inpu
 
 ### Module Output
 
-The Module Output enables you to send output to the edgeHub. To send output to another module or to the IoT Hub you have to setup the route to use the output when you created the node. The node input will enable you to send the telemetry message. <br/>
+The Module Output enables you to send output to the edgeHub module. To send output to another module or to the IoT Hub you have to setup the route to use the output when you created the node. The node input will enable you to send a message. <br/>
 The Module Output needs a connection to a Module Client and the name of the "output": 
 
 ![edit-module-output](/images/edit-module-output.PNG)
 
 ### Module Method
 
-The Module Method enables you receive module direct methods. The setup of the module defines which method the node is responding to and what the response is for the method call. The message coming from the node output will have the properties "topic: method", "method: &#x3C;method name&#x3E;" and "payload: &#x3C;method payload&#x3E;" added to it for selection and identification purposes.<br/>
-The input of the node will have to be used to send a response for the method call. The response (message) wil have to be connected (indirectly) to the message coming from the node output, to ensure a closed loop for the method. When sending a return for the method call on the input, the message property "status: &#x3C;your status&#x3E;" needs to be set on the message. See the function in the example for details.
+The Module Method enables you receive module direct methods. The setup of each module defines which method the node is responding to and what the response is for the method call. The message coming from the node output will look like:
+
+```json
+{
+    "topic": "method",
+    "method": "<the name of the method that was called>",
+    "payload": "<the payload that was sent when the method was called>"
+}
+````
+
+The input of the node is used to send a response for the method call. So this should be used by taking the message from the output, passing it to any needed logic/work, and then building a response that will go back into this node.
+
+The response must look like:
+
+```json
+{
+    "status": 200, // use appropriate HTTP status code
+    "payload": <any valid JSON>
+}
+```
+
+Both `msg.status` and `msg.payload` are required, and no other properties on `msg` will be sent.
 
 The Module Method needs a connection to a Module Client and the name of the "method": 
 

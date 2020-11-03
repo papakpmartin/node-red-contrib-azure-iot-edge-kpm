@@ -224,7 +224,6 @@ module.exports = function(RED) {
                     }
 
                     getResponse(node).then(function(rspns) {
-                            node.log(`rspns: ${JSON.stringify(rspns)}`)
                             var responseBody;
                             if (typeof(rspns.response) != "string") {
                                 // Turn message object into string 

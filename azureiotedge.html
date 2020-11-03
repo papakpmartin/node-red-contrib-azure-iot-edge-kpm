@@ -185,5 +185,6 @@
 <script type="text/x-red" data-help-name="modulemethod">
     <p>Azure IoT Edge Module Method node enables you to respond to methods sent by Azure IoT Hub by means of running in a Node-RED instance that is running as a module in an Azure IoT Edge deployment.</p>
     <p>The "method" setting will determine what method request this node is listening for and expecting to respond to. This will be availble at this node’s output.</p>
-    <p>This node’s input is what will be sent as the return to the IoT Hub.</p>
+    <p>This node’s input is what will be sent as the return to the IoT Hub. The input message must have a `msg.status` which is set to an appropriate HTTP status code, and a `msg.payload` which can be any valid JSON object. No other properties on `msg` will
+        be sent.</p>
 </script>

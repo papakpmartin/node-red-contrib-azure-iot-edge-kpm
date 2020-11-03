@@ -378,6 +378,8 @@ module.exports = function(RED) {
         }
         node.log('Sending Message to Azure IoT Edge: ' + output + '\n   Payload: ' + JSON.stringify(message));
         var msg = new Message(JSON.stringify(message));
+        msg.contentEncoding = "utf-8"
+        msg.contentType = "application/json"
         client.sendOutputEvent(output, msg, function(err, res) {
             if (err) {
                 node.error('Error while trying to send message:' + err.toString());

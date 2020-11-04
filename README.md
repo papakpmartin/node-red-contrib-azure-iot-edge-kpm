@@ -1,6 +1,6 @@
 # Azure IoT Edge Node-Red Module KPM
 
-![Node.js Package](https://github.com/kpm-at-hfi/node-red-contrib-azure-iot-edge-kpm/workflows/Node.js%20Package/badge.svg)
+![Node.js Package](https://github.com/kpm-at-hfi/node-red-contrib-azure-iot-edge-kpm/workflows/Node.js%20Package/badge.svg?branch=master&event=release)
 
 This Azure IoT Edge Node-Red Module is essentially a fork of a module that used to exist on npm, but disappeared around February 17, 2020. I pulled this from the Docker image that I'd built before the module disappeared. The only place that I see the original content still kind of alive is in a Docker image at [gbbiotwesouth/noderededgemodule](https://hub.docker.com/r/gbbiotwesouth/noderededgemodule/), a project that appears to still be active [GitHub](https://github.com/iotblackbelt/noderededgemodule). I only need the Node-RED module, not the Docker image, so I am publishing this. The original MIT license applies and is included.
 

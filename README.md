@@ -1,6 +1,6 @@
 # Azure IoT Edge Node-Red Module KPM
 
-![Node.js Package](https://github.com/kpm-at-hfi/node-red-contrib-azure-iot-edge-kpm/workflows/Node.js%20Package/badge.svg?branch=master&event=release)
+![Node.js Package](https://github.com/kpm-at-hfi/node-red-contrib-azure-iot-edge-kpm/actions/workflows/npmpublish.yml/badge.svg)
 
 This Azure IoT Edge Node-Red Module is essentially a fork of a module that used to exist on npm, but disappeared around February 17, 2020. I pulled this from the Docker image that I'd built before the module disappeared. The only place that I see the original content still kind of alive is in a Docker image at [gbbiotwesouth/noderededgemodule](https://hub.docker.com/r/gbbiotwesouth/noderededgemodule/), a project that appears to still be active [GitHub](https://github.com/iotblackbelt/noderededgemodule). I only need the Node-RED module, not the Docker image, so I am publishing this. The original MIT license applies and is included.
 
@@ -43,7 +43,7 @@ The Module Output needs a connection to a Module Client and the name of the "out
 
 The Module Method enables you receive module direct methods. The setup of each module defines which method the node is responding to and what the response is for the method call. The message coming from the node output will look like:
 
-```json
+```jsonc
 {
     "topic": "method",
     "method": "<the name of the method that was called>",
@@ -55,10 +55,10 @@ The input of the node is used to send a response for the method call. So this sh
 
 The response must look like:
 
-```json
+```jsonc
 {
     "status": 200, // use appropriate HTTP status code
-    "payload": <any valid JSON>
+    "payload": "<any valid JSON>"
 }
 ```
 

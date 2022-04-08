@@ -2,7 +2,7 @@ module.exports = function(RED) {
     'use strict'
 
     var Transport = require('azure-iot-device-mqtt').Mqtt;
-    var Client = require('azure-iot-device').ModuleClient;
+    var ModuleClient = require('azure-iot-device').ModuleClient;
     var Message = require('azure-iot-device').Message;
 
     var statusEnum = {
@@ -22,7 +22,7 @@ module.exports = function(RED) {
     var methodResponses = [];
 
     // Function to create the Module Client 
-    function ModuleClient(config) {
+    function CreateModuleClient(config) {
         // Store node for further use
         var node = this;
         node.connected = false;
@@ -31,7 +31,7 @@ module.exports = function(RED) {
         RED.nodes.createNode(this, config);
 
         // Create the module client
-        Client.fromEnvironment(Transport, function(err, client) {
+        ModuleClient.fromEnvironment(Transport, function(err, client) {
             if (err) {
                 node.log('Module Client creation error:' + err);
             } else {
@@ -392,7 +392,7 @@ module.exports = function(RED) {
     }
 
     // Registration of the client into Node-RED
-    RED.nodes.registerType("moduleclient", ModuleClient, {
+    RED.nodes.registerType("moduleclient", CreateModuleClient, {
         defaults: {
             module: { value: "" }
         }

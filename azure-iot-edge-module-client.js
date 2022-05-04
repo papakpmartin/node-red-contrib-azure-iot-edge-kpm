@@ -1,11 +1,16 @@
 module.exports = function(RED) {
     'use strict'
 
-    var Transport = require('azure-iot-device-mqtt').Mqtt;
-    var ModuleClient = require('azure-iot-device').ModuleClient;
-    var Message = require('azure-iot-device').Message;
+    const Protocol = require('azure-iot-device-mqtt').Mqtt;
+    // TODO: Add selector to config node to choose protocol
+    // var Protocol = require('azure-iot-device-amqp').Amqp;
+    // var Protocol = require('azure-iot-device-http').Http;
+    // var Protocol = require('azure-iot-device-mqtt').MqttWs;
+    // var Protocol = require('azure-iot-device-amqp').AmqpWs;
+    const ModuleClient = require('azure-iot-device').ModuleClient;
+    const Message = require('azure-iot-device').Message;
 
-    var statusEnum = {
+    const statusEnum = {
         disconnected: { color: "red", text: "Disconnected" },
         connected: { color: "green", text: "Connected" },
         sent: { color: "blue", text: "Sending message" },
@@ -17,36 +22,33 @@ module.exports = function(RED) {
         error: { color: "grey", text: "Error" }
     };
 
-    var moduleClient;
-    var moduleTwin;
-    var methodResponses = [];
+    let cached_module_client;
+    let cached_module_twin;
+    let method_responses_array = [];
 
-    // Function to create the Module Client 
-    function CreateModuleClient(config) {
-        // Store node for further use
-        var node = this;
-        node.connected = false;
 
-        // Create the Node-RED node
-        RED.nodes.createNode(this, config);
+    function createModuleClient(config) {
+        const node = this;
+        RED.nodes.createNode(node, config);
 
-        // Create the module client
-        ModuleClient.fromEnvironment(Transport, function(err, client) {
+        ModuleClient.fromEnvironment(Protocol, (err, client) => {
             if (err) {
                 node.log('Module Client creation error:' + err);
             } else {
-                client.on('error', function(err) {
+                node.log('Module Client created from environment');
+
+                // set up handlers
+                client.on('error', (err) => {
                     node.log('Module Client error:' + err);
                 });
-                node.log('Module Client created.');
-                // connect to the Edge instance
-                client.open(function(err) {
+
+                client.open((err) => {
                     if (err) {
-                        node.log('Module Client open error:' + err);
+                        node.log('Error opening Module Client:' + err);
                         throw err;
                     } else {
-                        node.log('Module Client connected.');
-                        client.getTwin(function(err, twin) {
+                        node.log('Module Client connected');
+                        client.getTwin((err, twin) => {
                             if (err) {
                                 node.error('Could not get the module twin: ' + err);
                                 throw err;
@@ -55,45 +57,46 @@ module.exports = function(RED) {
                                 node.log('Twin contents:');
                                 node.log(JSON.stringify(twin.properties));
 
-                                node.on('close', function() {
+                                node.on('close', () => {
                                     node.log('Azure IoT Edge Module Client closed.');
-                                    moduleClient = null;
-                                    moduleTwin = null;
+                                    cached_module_client = null;
+                                    cached_module_twin = null;
                                     twin.removeAllListeners();
                                     client.removeAllListeners();
                                     client.close();
                                 });
-                                moduleTwin = twin;
+                                cached_module_twin = twin;
                             }
                         });
-                        moduleClient = client;
+                        cached_module_client = client;
                     }
                 });
             }
         });
     }
 
-    // Function to create the Module Twin 
-    function ModuleTwin(config) {
-        // Store node for further use
-        var node = this;
 
-        // Create the Node-RED node
-        RED.nodes.createNode(this, config);
+    function createModuleTwin(config) {
+        var node = this;
+        RED.nodes.createNode(node, config);
+
         setStatus(node, statusEnum.disconnected);
-        getClient().then(function(client) {
-                setStatus(node, statusEnum.connected);
-                getTwin().then(function(twin) {
-                        // Register for changes
-                        twin.on('properties.desired', function(delta) {
+
+        getCachedModuleClient()
+            .then((client) => {
+
+                getCachedModuleTwin()
+                    .then(function(twin) {
+                        setStatus(node, statusEnum.connected);
+
+                        twin.on('properties.desired', (delta) => {
                             setStatus(node, statusEnum.desired);
-                            node.log('New desired properties received:');
-                            node.log(JSON.stringify(delta));
-                            node.send({ payload: delta, topic: "desired" })
+                            node.log(`New desired properties received: ${JSON.stringify(delta)}`);
+                            node.send({ payload: delta, topic: "desired" });
                             setStatus(node, statusEnum.connected);
                         });
 
-                        node.on('input', function(msg) {
+                        node.on('input', (msg) => {
                             setStatus(node, statusEnum.reported);
                             var messageJSON = null;
 
@@ -105,18 +108,21 @@ module.exports = function(RED) {
                             }
 
                             twin.properties.reported.update(messageJSON, function(err) {
-                                if (err) throw err;
-                                node.log('Twin state reported.');
+                                if (err) {
+                                    node.warn(`Error updating twin reported properties: ${err}`);
+                                    throw err;
+                                }
+                                node.log('Twin reported properties updated');
                                 setStatus(node, statusEnum.connected);
                             });
                         });
                     })
-                    .catch(function(err) {
-                        node.log('Module Twin error:' + err);
+                    .catch((err) => {
+                        node.log(`Module Twin error: ${err}`);
                     });
             })
             .catch(function(err) {
-                node.log("Module Twin can't be loaded: " + err);
+                node.log(`Module Twin can't be loaded: ${err}`);
             });
 
         node.on('close', function(done) {
@@ -125,24 +131,24 @@ module.exports = function(RED) {
         });
     }
 
-    // Module input to receive input from edgeHub
-    function ModuleInput(config) {
-        // Store node for further use
+
+    function createModuleInput(config) {
         var node = this;
         node.input = config.input;
+        RED.nodes.createNode(node, config);
 
-        // Create the Node-RED node
-        RED.nodes.createNode(this, config);
         setStatus(node, statusEnum.disconnected);
-        getClient().then(function(client) {
-                setStatus(node, statusEnum.connected);
-                // Act on module input messages
+
+        getCachedModuleClient()
+            .then((client) => {
                 node.log("Module Input created: " + node.input);
+                setStatus(node, statusEnum.connected);
+
                 client.on('inputMessage', function(inputName, msg) {
-                    outputMessage(client, node, inputName, msg);
+                    sendMessageToNodeOutput(client, node, inputName, msg);
                 });
             })
-            .catch(function(err) {
+            .catch((err) => {
                 node.log("Module Input can't be loaded: " + err);
             });
 
@@ -152,20 +158,20 @@ module.exports = function(RED) {
         });
     }
 
-    // Module output to send output to edgeHub 
-    function ModuleOutput(config) {
-        // Store node for further use
+
+    function createModuleOutput(config) {
         var node = this;
         node.output = config.output;
+        RED.nodes.createNode(node, config);
 
-        // Create the Node-RED node
-        RED.nodes.createNode(this, config);
         setStatus(node, statusEnum.disconnected);
-        getClient().then(function(client) {
+
+        getCachedModuleClient()
+            .then((client) => {
                 setStatus(node, statusEnum.connected);
-                // React on input from node-red
-                node.log("Module Output created: " + node.output);
-                node.on('input', function(msg) {
+                node.log(`Module Output created: ${node.output}`);
+
+                node.on('input', (msg) => {
                     setStatus(node, statusEnum.sent);
                     var messageJSON = null;
 
@@ -180,31 +186,30 @@ module.exports = function(RED) {
                     sendMessageToEdgeHub(client, node, messageJSON, messageOutput);
                 });
             })
-            .catch(function(err) {
+            .catch((err) => {
                 node.log("Module Ouput can't be loaded: " + err);
             });
 
-        node.on('close', function(done) {
+        node.on('close', (done) => {
             setStatus(node, statusEnum.disconnected);
             done();
         });
     }
 
-    // Module method to receive methods from IoT Hub 
-    function ModuleMethod(config) {
-        // Store node for further use
+
+    function createModuleMethod(config) {
         var node = this;
         node.method = config.method;
+        RED.nodes.createNode(node, config);
 
-        // Create the Node-RED node
-        RED.nodes.createNode(this, config);
         setStatus(node, statusEnum.disconnected);
-        getClient().then(function(client) {
+
+        getCachedModuleClient()
+            .then((client) => {
                 setStatus(node, statusEnum.connected);
                 var mthd = node.method;
                 node.log('Direct Method created: ' + mthd);
-                client.onMethod(mthd, function(request, response) {
-                    // Set status
+                client.onMethod(mthd, (request, response) => {
                     setStatus(node, statusEnum.method);
                     node.log('Direct Method called: ' + request.methodName);
 
@@ -223,7 +228,8 @@ module.exports = function(RED) {
                         });
                     }
 
-                    getResponse(node).then(function(rspns) {
+                    getModuleMethodResponse(node)
+                        .then((rspns) => {
                             var responseBody;
                             if (typeof(rspns.response) != "string") {
                                 // Turn message object into string 
@@ -231,7 +237,7 @@ module.exports = function(RED) {
                             } else {
                                 responseBody = rspns.response;
                             }
-                            response.send(rspns.status, responseBody, function(err) {
+                            response.send(rspns.status, responseBody, (err) => {
                                 if (err) {
                                     node.log(`Failure in response.send(): ${err}`);
                                 } else {
@@ -242,112 +248,122 @@ module.exports = function(RED) {
                         .catch(function(err) {
                             node.log(`Failure in getResponse().then(): ${err}`);
                         });
-                    // reset response
+
                     node.response = null;
 
                     setStatus(node, statusEnum.connected);
                 });
 
                 // Set method response on input
-                node.on('input', function(msg) {
+                node.on('input', (msg) => {
                     var method = node.method;
-                    methodResponses.push({ method: method, response: msg.payload, status: msg.status });
-                    node.log("Module Method response set through node input: " + JSON.stringify(methodResponses.find(function(m) { return m.method === method })));
-                    // node.log("Module Method response set through node input: " + JSON.stringify(methodResponses.find( m => m.method === method ))); 
+                    method_responses_array.push({
+                        method: method,
+                        response: msg.payload,
+                        status: msg.status
+                    });
+                    node.log(`Module Method response set through node input: ${JSON.stringify(method_responses_array.find((m) => m.method === method))}`);
                 });
             })
-            .catch(function(err) {
+            .catch((err) => {
                 node.log("Module Method can't be loaded: " + err);
             });
 
-        node.on('close', function(done) {
+        node.on('close', (done) => {
             setStatus(node, statusEnum.disconnected);
             done();
         });
     }
 
-    // Get module client using promise, and retry, and slow backoff
-    function getClient() {
-        var retries = 20;
-        var timeOut = 1000;
-        // Retrieve client using progressive promise to wait for module client to be opened
-        var promise = Promise.reject();
-        for (var i = 1; i <= retries; i++) {
-            promise = promise.catch(function() {
-                    if (moduleClient) {
-                        return moduleClient;
+
+    function getCachedModuleClient() {
+        const retries = 20;
+        const timeOut = 1000;
+
+        let promise = Promise.reject();
+        for (let i = 1; i <= retries; i++) {
+            promise = promise.catch(() => {
+                    if (cached_module_client) {
+                        return cached_module_client;
                     } else {
-                        throw new Error("Module Client not initiated..");
+                        throw new Error("Unable to get Module Client from cache");
                     }
                 })
-                .catch(function rejectDelay(reason) {
+                .catch((reason) => {
                     retries++;
-                    return new Promise(function(resolve, reject) {
-                        setTimeout(reject.bind(null, reason), timeOut * ((retries % 10) + 1));
+                    return new Promise((resolve, reject) => {
+                        setTimeout(
+                            reject.bind(null, reason),
+                            timeOut * ((retries % 10) + 1)
+                        );
                     });
                 });
         }
         return promise;
     }
 
-    // Get module twin using promise, and retry, and slow backoff
-    function getTwin() {
-        var retries = 10;
-        var timeOut = 1000;
-        // Retrieve twin using progressive promise to wait for module twin to be opened
-        var promise = Promise.reject();
-        for (var i = 1; i <= retries; i++) {
-            promise = promise.catch(function() {
-                    if (moduleTwin) {
-                        return moduleTwin;
+
+    function getCachedModuleTwin() {
+        const retries = 10;
+        const timeOut = 1000;
+
+        let promise = Promise.reject();
+        for (let i = 1; i <= retries; i++) {
+            promise = promise.catch(() => {
+                    if (cached_module_twin) {
+                        return cached_module_twin;
                     } else {
-                        throw new Error("Module Client not initiated..");
+                        throw new Error("Unable to get Module Twin from cache");
                     }
                 })
-                .catch(function rejectDelay(reason) {
-                    return new Promise(function(resolve, reject) {
-                        setTimeout(reject.bind(null, reason), timeOut * i);
-                    });
-                });
+                .catch((reason) => new Promise((resolve, reject) => {
+                    setTimeout(
+                        reject.bind(null, reason),
+                        timeOut * i
+                    );
+                }));
         }
         return promise;
     }
 
-    // Get module method response using promise, and retry, and slow backoff
-    function getResponse(node) {
-        var retries = 20;
-        var timeOut = 1000;
-        var m = {};
-        node.log("Module Method node method: " + node.method);
-        // Retrieve client using progressive promise to wait for module client to be opened
-        var promise = Promise.reject();
-        for (var i = 1; i <= retries; i++) {
-            promise = promise.catch(function() {
-                    var methodResponse = methodResponses.find(function(m) { return m.method === node.method });
+
+    function getModuleMethodResponse(node) {
+        const retries = 20;
+        const timeOut = 1000;
+        node.log(`Module Method node method: ${node.method}`);
+        let m = {};
+
+        let promise = Promise.reject();
+        for (let i = 1; i <= retries; i++) {
+            promise = promise.catch(() => {
+                    let methodResponse = method_responses_array.find((m) => m.method === node.method);
                     if (methodResponse) {
                         // get the response and clean the array
-                        var response = methodResponse;
-                        node.log("Module Method response object found: " + JSON.stringify(response));
-                        methodResponses.splice(methodResponses.findIndex(function(m) { return m.method === node.method }), 1);
+                        let response = methodResponse;
+                        node.log(`Module Method response object found: ${JSON.stringify(response)}`);
+                        method_responses_array.splice(method_responses_array.findIndex((m) => m.method === node.method), 1);
                         return response;
                     } else {
-                        throw new Error("Module Method Response not initiated..");
+                        throw new Error("Module Method Response not found in responses array");
                     }
                 })
-                .catch(function rejectDelay(reason) {
+                .catch((reason) => {
                     retries++;
-                    return new Promise(function(resolve, reject) {
-                        setTimeout(reject.bind(null, reason), timeOut * ((retries % 10) + 1));
+                    return new Promise((resolve, reject) => {
+                        setTimeout(
+                            reject.bind(null, reason),
+                            timeOut * ((retries % 10) + 1)
+                        );
                     });
                 });
         }
         return promise;
     }
 
-    // This function just sends the incoming message to the node output adding the topic "input" and the input name.
-    var outputMessage = function(client, node, inputName, msg) {
 
-        client.complete(msg, function(err) {
+    function sendMessageToNodeOutput(client, node, inputName, msg) {
+
+        client.complete(msg, function (err) {
             if (err) {
                 node.log('error:' + err);
                 setStatus(node, statusEnum.error);
@@ -358,21 +374,20 @@ module.exports = function(RED) {
             setStatus(node, statusEnum.received);
             var message = JSON.parse(msg.getBytes().toString('utf8'));
             if (message) {
-                node.log('Processed input message:' + inputName)
-                    // send to node output
+                node.log('Processed input message:' + inputName);
+                // send to node output
                 node.send({ payload: message, topic: "input", input: inputName });
             }
             setStatus(node, statusEnum.connected);
         }
     }
 
-    var setStatus = function(node, status) {
+    function setStatus(node, status) {
         node.status({ fill: status.color, shape: "dot", text: status.text });
     }
 
-    var sendMessageToEdgeHub = function(client, node, message, output) {
+    function sendMessageToEdgeHub(client, node, message, output) {
 
-        // Send the message to IoT Edge
         if (!output) {
             output = "output";
         }
@@ -391,36 +406,33 @@ module.exports = function(RED) {
         });
     }
 
-    // Registration of the client into Node-RED
-    RED.nodes.registerType("moduleclient", CreateModuleClient, {
+
+
+    RED.nodes.registerType("moduleclient", createModuleClient, {
         defaults: {
             module: { value: "" }
         }
     });
 
-    // Registration of the node into Node-RED
-    RED.nodes.registerType("moduletwin", ModuleTwin, {
+    RED.nodes.registerType("moduletwin", createModuleTwin, {
         defaults: {
             name: { value: "Module Twin" }
         }
     });
 
-    // Registration of the node into Node-RED
-    RED.nodes.registerType("moduleinput", ModuleInput, {
+    RED.nodes.registerType("moduleinput", createModuleInput, {
         defaults: {
             input: { value: "input1" }
         }
     });
 
-    // Registration of the node into Node-RED
-    RED.nodes.registerType("moduleoutput", ModuleOutput, {
+    RED.nodes.registerType("moduleoutput", createModuleOutput, {
         defaults: {
             output: { value: "output1" }
         }
     });
 
-    // Registration of the node into Node-RED
-    RED.nodes.registerType("modulemethod", ModuleMethod, {
+    RED.nodes.registerType("modulemethod", createModuleMethod, {
         defaults: {
             method: { value: "method1" },
             response: { value: "{}" }

@@ -1,6 +1,6 @@
 {
     "name": "node-red-contrib-azure-iot-edge-kpm",
-    "version": "0.5.7",
+    "version": "0.5.8-alpha-16",
     "author": {
         "name": "Ken Martin",
         "email": "kmartin@hydraflexinc.com",
@@ -29,7 +29,8 @@
     ],
     "node-red": {
         "nodes": {
-            "Azure": "azureiotedge.js"
+            "Azure IoT Edge Module Client": "azure-iot-edge-module-client.js",
+            "Azure IoT Edge Device Client": "azure-iot-edge-device-client.js"
         }
     }
 }

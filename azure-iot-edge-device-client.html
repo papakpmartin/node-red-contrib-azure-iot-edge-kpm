@@ -1,0 +1,59 @@
+<script type="text/javascript">
+    RED.nodes.registerType('device-client', {
+        category: 'config',
+        color: '#a6bbcf',
+        defaults: {
+            module: {
+                value: ""
+            }
+        },
+        label: function() {
+            return "Device Client";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="device-client">
+    <p>You do not need to set any properties for this client to be configured. See the "Help" for this node to learn more.</p>
+</script>
+
+<script type="text/x-red" data-help-name="device-client">
+    <p>This Device Client configuration node automatically creates the connection with Azure IoT Edge running on the host system. To do this, the <code>IOTEDGE_WORKLOADURI</code> environment variable needs to be available, which is normally true when running
+        within Azure IoT Edge.</p>
+    <p>This configuration will be used by the other nodes in this package to interact with Azure IoT Hub.</p>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('device-twin', {
+        category: 'Azure IoT Edge',
+        color: '#a6bbcf',
+        defaults: {
+            client: {
+                value: "",
+                type: "device-client",
+                required: true
+            }
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "azureiotedge.png",
+        label: function() {
+            return "Device Twin";
+        },
+        paletteLabel: function() {
+            return "Device Twin";
+        },
+    });
+</script>
+
+<script type="text/x-red" data-template-name="device-twin">
+    <div class="form-row">
+        <label for="node-input-client"><i class="icon-tag"></i> <span>Module Client</span></label>
+        <input type="text" id="node-input-client" placeholder="Client">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="device-twin">
+    <p>Azure IoT Edge Device Twin receives desired properties changes and sends reported properties to Azure IoT Edge using Node-Red. Node-Red needs to run as a module in Azure IoT Edge for this node to work.</p>
+    <p>The input of the node enables sending reported properties to the module twin and the output of the node represents the changes to the desired properties.</p>
+</script>

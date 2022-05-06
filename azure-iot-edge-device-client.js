@@ -20,7 +20,7 @@ module.exports = function(RED) {
 
     const IOTEDGE_IOTHUBHOSTNAME = process.env.IOTEDGE_IOTHUBHOSTNAME
     const IOTEDGE_DEVICEID = process.env.IOTEDGE_DEVICEID
-    var deviceConnectionString = `HostName=${IOTEDGE_IOTHUBHOSTNAME};DeviceId=${IOTEDGE_DEVICEID};x509=true`;
+    const deviceConnectionString = `HostName=${IOTEDGE_IOTHUBHOSTNAME};DeviceId=${IOTEDGE_DEVICEID};x509=true`;
     // console.log(deviceConnectionString)
 
     const certFile = process.env.PATH_TO_CERTIFICATE_FILE;

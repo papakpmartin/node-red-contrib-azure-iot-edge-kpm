@@ -3,10 +3,10 @@ module.exports = function(RED) {
 
     const Protocol = require('azure-iot-device-mqtt').Mqtt;
     // TODO: Add selector to config node to choose protocol
-    // var Protocol = require('azure-iot-device-amqp').Amqp;
-    // var Protocol = require('azure-iot-device-http').Http;
-    // var Protocol = require('azure-iot-device-mqtt').MqttWs;
-    // var Protocol = require('azure-iot-device-amqp').AmqpWs;
+    // const Protocol = require('azure-iot-device-amqp').Amqp;
+    // const Protocol = require('azure-iot-device-http').Http;
+    // const Protocol = require('azure-iot-device-mqtt').MqttWs;
+    // const Protocol = require('azure-iot-device-amqp').AmqpWs;
     const ModuleClient = require('azure-iot-device').ModuleClient;
     const Message = require('azure-iot-device').Message;
 
@@ -28,7 +28,7 @@ module.exports = function(RED) {
 
 
     function createModuleClient(config) {
-        const node = this;
+        let node = this;
         RED.nodes.createNode(node, config);
 
         ModuleClient.fromEnvironment(Protocol, (err, client) => {
@@ -277,8 +277,8 @@ module.exports = function(RED) {
 
 
     function getCachedModuleClient() {
-        const retries = 20;
-        const timeOut = 1000;
+        let retries = 20;
+        let timeOut = 1000;
 
         let promise = Promise.reject();
         for (let i = 1; i <= retries; i++) {
@@ -304,8 +304,8 @@ module.exports = function(RED) {
 
 
     function getCachedModuleTwin() {
-        const retries = 10;
-        const timeOut = 1000;
+        let retries = 10;
+        let timeOut = 1000;
 
         let promise = Promise.reject();
         for (let i = 1; i <= retries; i++) {
@@ -328,8 +328,8 @@ module.exports = function(RED) {
 
 
     function getModuleMethodResponse(node) {
-        const retries = 20;
-        const timeOut = 1000;
+        let retries = 20;
+        let timeOut = 1000;
         node.log(`Module Method node method: ${node.method}`);
         let m = {};
 

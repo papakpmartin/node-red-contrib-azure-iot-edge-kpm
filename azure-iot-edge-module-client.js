@@ -77,7 +77,7 @@ module.exports = function(RED) {
 
 
     function createModuleTwin(config) {
-        var node = this;
+        let node = this;
         RED.nodes.createNode(node, config);
 
         setStatus(node, statusEnum.disconnected);
@@ -98,7 +98,7 @@ module.exports = function(RED) {
 
                         node.on('input', (msg) => {
                             setStatus(node, statusEnum.reported);
-                            var messageJSON = null;
+                            let messageJSON = null;
 
                             if (typeof(msg.payload) != "string") {
                                 messageJSON = msg.payload;
@@ -133,7 +133,7 @@ module.exports = function(RED) {
 
 
     function createModuleInput(config) {
-        var node = this;
+        let node = this;
         node.input = config.input;
         RED.nodes.createNode(node, config);
 
@@ -160,7 +160,7 @@ module.exports = function(RED) {
 
 
     function createModuleOutput(config) {
-        var node = this;
+        let node = this;
         node.output = config.output;
         RED.nodes.createNode(node, config);
 
@@ -173,7 +173,7 @@ module.exports = function(RED) {
 
                 node.on('input', (msg) => {
                     setStatus(node, statusEnum.sent);
-                    var messageJSON = null;
+                    let messageJSON = null;
 
                     if (typeof(msg.payload) != "string") {
                         messageJSON = msg.payload;
@@ -182,7 +182,7 @@ module.exports = function(RED) {
                         messageJSON = JSON.parse(msg.payload);
                     }
 
-                    var messageOutput = node.output;
+                    let messageOutput = node.output;
                     sendMessageToEdgeHub(client, node, messageJSON, messageOutput);
                 });
             })
@@ -198,7 +198,7 @@ module.exports = function(RED) {
 
 
     function createModuleMethod(config) {
-        var node = this;
+        let node = this;
         node.method = config.method;
         RED.nodes.createNode(node, config);
 
@@ -207,7 +207,7 @@ module.exports = function(RED) {
         getCachedModuleClient()
             .then((client) => {
                 setStatus(node, statusEnum.connected);
-                var mthd = node.method;
+                let mthd = node.method;
                 node.log('Direct Method created: ' + mthd);
                 client.onMethod(mthd, (request, response) => {
                     setStatus(node, statusEnum.method);
@@ -230,7 +230,7 @@ module.exports = function(RED) {
 
                     getModuleMethodResponse(node)
                         .then((rspns) => {
-                            var responseBody;
+                            let responseBody;
                             if (typeof(rspns.response) != "string") {
                                 // Turn message object into string 
                                 responseBody = JSON.stringify(rspns.response);
@@ -256,7 +256,7 @@ module.exports = function(RED) {
 
                 // Set method response on input
                 node.on('input', (msg) => {
-                    var method = node.method;
+                    let method = node.method;
                     method_responses_array.push({
                         method: method,
                         response: msg.payload,
@@ -372,7 +372,7 @@ module.exports = function(RED) {
 
         if (inputName === node.input) {
             setStatus(node, statusEnum.received);
-            var message = JSON.parse(msg.getBytes().toString('utf8'));
+            let message = JSON.parse(msg.getBytes().toString('utf8'));
             if (message) {
                 node.log('Processed input message:' + inputName);
                 // send to node output
@@ -392,7 +392,7 @@ module.exports = function(RED) {
             output = "output";
         }
         node.log('Sending Message to Azure IoT Edge: ' + output + '\n   Payload: ' + JSON.stringify(message));
-        var msg = new Message(JSON.stringify(message));
+        let msg = new Message(JSON.stringify(message));
         msg.contentEncoding = "utf-8"
         msg.contentType = "application/json"
         client.sendOutputEvent(output, msg, function(err, res) {

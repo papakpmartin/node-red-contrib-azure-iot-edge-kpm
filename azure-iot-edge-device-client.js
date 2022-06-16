@@ -18,8 +18,8 @@ module.exports = function(RED) {
         error: { color: "grey", text: "Error" }
     };
 
-    const IOTEDGE_IOTHUBHOSTNAME = process.env.IOTEDGE_IOTHUBHOSTNAME;
-    const IOTEDGE_DEVICEID = process.env.IOTEDGE_DEVICEID;
+    const IOTEDGE_IOTHUBHOSTNAME = process.env.IOTEDGE_IOTHUBHOSTNAME
+    const IOTEDGE_DEVICEID = process.env.IOTEDGE_DEVICEID
     const deviceConnectionString = `HostName=${IOTEDGE_IOTHUBHOSTNAME};DeviceId=${IOTEDGE_DEVICEID};x509=true`;
     // console.log(deviceConnectionString)
 
@@ -42,13 +42,13 @@ module.exports = function(RED) {
         node.connected = false;
         RED.nodes.createNode(node, config);
 
-        node.log('Creating a Device Client from a x509 connection string');
-        let client = DeviceClient.fromConnectionString(deviceConnectionString, Protocol);
+        node.log('Creating a Device Client from a x509 connection string')
+        let client = DeviceClient.fromConnectionString(deviceConnectionString, Protocol)
 
-        node.log('Setting client options');
-        client.setOptions(options);
-        
-        node.log('Setting client options');
+        node.log('Setting client options')
+        client.setOptions(options)
+
+        node.log('Setting client options')
         client.open((err) => {
             if (err) {
                 node.warn('client.open error:' + err);
@@ -83,15 +83,15 @@ module.exports = function(RED) {
 
 
 
-    // Function to create the Device Twin 
+    // Function to create the Module Twin 
     function DeviceTwin(config) {
-        let node = this;
+        var node = this;
         RED.nodes.createNode(node, config);
         setStatus(node, statusEnum.disconnected);
 
         getClient()
             .then(function(client) {
-                node.log(client);
+                node.log(client)
                 setStatus(node, statusEnum.connected);
 
                 getTwin()
@@ -107,7 +107,7 @@ module.exports = function(RED) {
 
                         node.on('input', function(msg) {
                             setStatus(node, statusEnum.reported);
-                            let messageJSON = null;
+                            var messageJSON = null;
 
                             if (typeof(msg.payload) != "string") {
                                 messageJSON = msg.payload;
@@ -137,13 +137,13 @@ module.exports = function(RED) {
         });
     }
 
-    // Get device client using promise, and retry, and slow backoff
+    // Get module client using promise, and retry, and slow backoff
     function getClient() {
-        let retries = 20;
-        let timeOut = 1000;
+        var retries = 20;
+        var timeOut = 1000;
         // Retrieve client using progressive promise to wait for module client to be opened
-        let promise = Promise.reject();
-        for (let i = 1; i <= retries; i++) {
+        var promise = Promise.reject();
+        for (var i = 1; i <= retries; i++) {
             promise = promise
                 .catch(function() {
                     if (deviceClient) {
@@ -164,11 +164,11 @@ module.exports = function(RED) {
 
     // Get module twin using promise, and retry, and slow backoff
     function getTwin() {
-        let retries = 10;
-        let timeOut = 1000;
+        var retries = 10;
+        var timeOut = 1000;
         // Retrieve twin using progressive promise to wait for module twin to be opened
-        let promise = Promise.reject();
-        for (let i = 1; i <= retries; i++) {
+        var promise = Promise.reject();
+        for (var i = 1; i <= retries; i++) {
             promise = promise.catch(function() {
                     if (deviceTwin) {
                         return deviceTwin;
@@ -186,7 +186,7 @@ module.exports = function(RED) {
     }
 
 
-    let setStatus = function(node, status) {
+    var setStatus = function(node, status) {
         node.status({ fill: status.color, shape: "dot", text: status.text });
     }
 

@@ -21,17 +21,15 @@ module.exports = function(RED) {
     const IOTEDGE_IOTHUBHOSTNAME = process.env.IOTEDGE_IOTHUBHOSTNAME;
     const IOTEDGE_DEVICEID = process.env.IOTEDGE_DEVICEID;
     const deviceConnectionString = `HostName=${IOTEDGE_IOTHUBHOSTNAME};DeviceId=${IOTEDGE_DEVICEID};x509=true`;
-    // console.log(deviceConnectionString)
 
     const certFile = process.env.PATH_TO_CERTIFICATE_FILE;
     const keyFile = process.env.PATH_TO_KEY_FILE;
-    const cert_contents = fs.readFileSync(certFile, 'utf-8').toString()
-    const key_contents = fs.readFileSync(keyFile, 'utf-8').toString()
+    const cert_contents = fs.readFileSync(certFile, 'utf-8').toString();
+    const key_contents = fs.readFileSync(keyFile, 'utf-8').toString();
     const options = {
         cert: cert_contents,
         key: key_contents
     };
-    // console.log(options)
 
     let deviceClient;
     let deviceTwin;
@@ -55,7 +53,6 @@ module.exports = function(RED) {
                 throw err;
             } else {
                 // node.log('Device Client opened');
-
                 client.getTwin((err, twin) => {
                     if (err) {
                         node.error('Could not get the device twin: ' + err);
@@ -66,7 +63,7 @@ module.exports = function(RED) {
                         node.log(twin.properties);
 
                         node.on('close', function() {
-                            node.warn('Azure IoT Edge Device Client closed');
+                            node.log('Azure IoT Edge Device Client closed');
                             deviceClient = null;
                             deviceTwin = null;
                             twin.removeAllListeners();

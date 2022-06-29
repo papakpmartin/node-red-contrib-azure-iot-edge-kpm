@@ -24,15 +24,15 @@ module.exports = function(RED) {
 
     const certFile = process.env.PATH_TO_CERTIFICATE_FILE;
     const keyFile = process.env.PATH_TO_KEY_FILE;
-    const cert_contents = "";
-    const key_contents = "";
-    const options = {};
+    let cert_contents = "";
+    let key_contents = "";
+    let options = {};
 
     try {
         cert_contents = fs.readFileSync(certFile, 'utf-8').toString();
         key_contents = fs.readFileSync(keyFile, 'utf-8').toString();
     } catch (err) {
-        node.warn('Unable to read certificate and/or key files');
+        console.error('Unable to read certificate and/or key files');
         throw err;
     }
 

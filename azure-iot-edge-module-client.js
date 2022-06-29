@@ -28,7 +28,7 @@ module.exports = function(RED) {
 
 
     function createModuleClient(config) {
-        let node = this;
+        const node = this;
         RED.nodes.createNode(node, config);
 
         ModuleClient.fromEnvironment(Protocol, (err, client) => {
@@ -77,7 +77,7 @@ module.exports = function(RED) {
 
 
     function createModuleTwin(config) {
-        var node = this;
+        const node = this;
         RED.nodes.createNode(node, config);
 
         setStatus(node, statusEnum.disconnected);
@@ -133,7 +133,7 @@ module.exports = function(RED) {
 
 
     function createModuleInput(config) {
-        var node = this;
+        const node = this;
         node.input = config.input;
         RED.nodes.createNode(node, config);
 
@@ -160,7 +160,7 @@ module.exports = function(RED) {
 
 
     function createModuleOutput(config) {
-        var node = this;
+        const node = this;
         node.output = config.output;
         RED.nodes.createNode(node, config);
 
@@ -173,7 +173,7 @@ module.exports = function(RED) {
 
                 node.on('input', (msg) => {
                     setStatus(node, statusEnum.sent);
-                    var messageJSON = null;
+                    let messageJSON = null;
 
                     if (typeof(msg.payload) != "string") {
                         messageJSON = msg.payload;
@@ -182,7 +182,7 @@ module.exports = function(RED) {
                         messageJSON = JSON.parse(msg.payload);
                     }
 
-                    var messageOutput = node.output;
+                    let messageOutput = node.output;
                     sendMessageToEdgeHub(client, node, messageJSON, messageOutput);
                 });
             })
@@ -198,7 +198,7 @@ module.exports = function(RED) {
 
 
     function createModuleMethod(config) {
-        var node = this;
+        const node = this;
         node.method = config.method;
         RED.nodes.createNode(node, config);
 
@@ -256,7 +256,7 @@ module.exports = function(RED) {
 
                 // Set method response on input
                 node.on('input', (msg) => {
-                    var method = node.method;
+                    const method = node.method;
                     method_responses_array.push({
                         method: method,
                         response: msg.payload,
@@ -363,7 +363,7 @@ module.exports = function(RED) {
 
     function sendMessageToNodeOutput(client, node, inputName, msg) {
 
-        client.complete(msg, function (err) {
+        client.complete(msg, function(err) {
             if (err) {
                 node.log('error:' + err);
                 setStatus(node, statusEnum.error);

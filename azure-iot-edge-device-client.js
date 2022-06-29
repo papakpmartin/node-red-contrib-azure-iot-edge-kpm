@@ -3,7 +3,7 @@ module.exports = function(RED) {
 
     const Protocol = require('azure-iot-device-mqtt').Mqtt;
     const DeviceClient = require('azure-iot-device').Client;
-    const Message = require('azure-iot-device').Message;
+    // const Message = require('azure-iot-device').Message;
     const fs = require('fs');
 
     const statusEnum = {
@@ -36,12 +36,12 @@ module.exports = function(RED) {
 
 
     function CreateDeviceClient(config) {
-        let node = this;
+        const node = this;
         node.connected = false;
         RED.nodes.createNode(node, config);
 
         node.log('Creating a Device Client from a x509 connection string')
-        let client = DeviceClient.fromConnectionString(deviceConnectionString, Protocol)
+        const client = DeviceClient.fromConnectionString(deviceConnectionString, Protocol)
 
         node.log('Setting client options')
         client.setOptions(options)
@@ -82,7 +82,7 @@ module.exports = function(RED) {
 
     // Function to create the Module Twin 
     function DeviceTwin(config) {
-        var node = this;
+        const node = this;
         RED.nodes.createNode(node, config);
         setStatus(node, statusEnum.disconnected);
 
@@ -161,10 +161,10 @@ module.exports = function(RED) {
 
     // Get module twin using promise, and retry, and slow backoff
     function getTwin() {
-        var retries = 10;
-        var timeOut = 1000;
+        let retries = 10;
+        let timeOut = 1000;
         // Retrieve twin using progressive promise to wait for module twin to be opened
-        var promise = Promise.reject();
+        let promise = Promise.reject();
         for (var i = 1; i <= retries; i++) {
             promise = promise.catch(function() {
                     if (deviceTwin) {
@@ -183,7 +183,7 @@ module.exports = function(RED) {
     }
 
 
-    var setStatus = function(node, status) {
+    const setStatus = function(node, status) {
         node.status({ fill: status.color, shape: "dot", text: status.text });
     }
 

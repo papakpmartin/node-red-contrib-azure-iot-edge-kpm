@@ -24,9 +24,19 @@ module.exports = function(RED) {
 
     const certFile = process.env.PATH_TO_CERTIFICATE_FILE;
     const keyFile = process.env.PATH_TO_KEY_FILE;
-    const cert_contents = fs.readFileSync(certFile, 'utf-8').toString();
-    const key_contents = fs.readFileSync(keyFile, 'utf-8').toString();
-    const options = {
+    const cert_contents = "";
+    const key_contents = "";
+    const options = {};
+
+    try {
+        cert_contents = fs.readFileSync(certFile, 'utf-8').toString();
+        key_contents = fs.readFileSync(keyFile, 'utf-8').toString();
+    } catch (err) {
+        node.log('File read error');
+        throw err;
+    }
+
+    options = {
         cert: cert_contents,
         key: key_contents
     };

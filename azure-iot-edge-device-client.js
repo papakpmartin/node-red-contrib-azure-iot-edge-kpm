@@ -32,7 +32,7 @@ module.exports = function(RED) {
         cert_contents = fs.readFileSync(certFile, 'utf-8').toString();
         key_contents = fs.readFileSync(keyFile, 'utf-8').toString();
     } catch (err) {
-        node.log('File read error');
+        node.warn('Unable to read certificate and/or key files');
         throw err;
     }
 

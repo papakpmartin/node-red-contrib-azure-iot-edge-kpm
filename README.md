@@ -68,3 +68,29 @@ The Module Method needs a connection to a Module Client and the name of the "met
 
 ![edit-module-method](/images/edit-module-method.PNG)
 
+
+
+## Miscellaneous In-Process
+
+### For Device Twin...
+
+#### Container Create Options:
+
+```jsonc
+{
+  "HostConfig": {
+    "Binds": [
+      "/path/to/your/iotedge/certs/directory/on/host:/data/certs"
+    ]
+  }
+}
+```
+
+#### Environment Variables:
+
+Add these in your azure deployment manifest.
+
+```
+PATH_TO_CERTIFICATE_FILE: /data/certs/iot-edge-device-identity-full-chain.cert.pem
+PATH_TO_KEY_FILE: /data/certs/iot-edge-device-identity.key.pem
+```

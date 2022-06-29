@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   height="30"
+   width="20"
+   inkscape:version="1.0 (4035a4f, 2020-05-01)"
+   sodipodi:docname="iot-edge-module-logo.svg"
+   id="svg114"
+   version="1.1"
+   aria-hidden="true"
+   focusable="false"
+   role="presentation"
+   viewBox="0 0 20 30">
+  <metadata
+     id="metadata120">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs118" />
+  <sodipodi:namedview
+     inkscape:document-rotation="0"
+     inkscape:current-layer="layer1"
+     inkscape:window-maximized="0"
+     inkscape:window-y="23"
+     inkscape:window-x="13"
+     inkscape:cy="17.738526"
+     inkscape:cx="19.511852"
+     inkscape:zoom="19.994897"
+     showgrid="false"
+     id="namedview116"
+     inkscape:window-height="986"
+     inkscape:window-width="1634"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <g
+     sodipodi:insensitive="true"
+     style="opacity:0"
+     inkscape:groupmode="layer"
+     id="layer1"
+     inkscape:label="Background">
+    <rect
+       inkscape:label="rect934"
+       style="opacity:1;fill:#ff0026;fill-opacity:0.842742;stroke-width:2.89688;stroke-linecap:round;stroke-opacity:0.427419"
+       id="rect934"
+       width="20"
+       height="30"
+       x="0"
+       y="0" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Lines">
+    <path
+       id="path104"
+       d="m 12.762787,13.997104 5.253822,8.728157 -1.166584,0.634499 -5.252982,-8.728156 z"
+       style="fill:#ffffff;fill-opacity:0.7;stroke-width:0"
+       clip-path="none"
+       mask="none" />
+    <path
+       id="path102"
+       d="M 6.741034,5.9625068 12.678021,13.993912 11.578579,14.728175 5.642432,6.6975683 Z"
+       style="fill:#ffffff;fill-opacity:0.7;stroke-width:0"
+       clip-path="none"
+       mask="none" />
+    <path
+       id="path102-6"
+       d="m 11.888652,13.459589 -5.188227,8.487439 1.161805,0.641573 5.187463,-8.486575 z"
+       style="fill:#ffffff;fill-opacity:0.7;stroke-width:0" />
+    <path
+       mask="none"
+       clip-path="none"
+       style="fill:#ffffff;fill-opacity:0.7;stroke-width:0"
+       d="m 3.48191,14.278431 9.967885,-0.62652 0.01986,1.321938 -9.966759,0.626248 z"
+       id="path102-5" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Dots">
+    <ellipse
+       style="fill:#ffffff;fill-opacity:1;stroke-width:0"
+       cx="6.28615"
+       cy="6.4373837"
+       id="circle92"
+       ry="2.4741483"
+       rx="2.6017327"
+       clip-path="none" />
+    <ellipse
+       style="fill:#ffffff;fill-opacity:1;stroke-width:0"
+       cx="12.244958"
+       cy="14.418508"
+       id="circle94"
+       ry="2.9530158"
+       rx="3.1052942"
+       clip-path="none" />
+    <ellipse
+       style="fill:#ffffff;fill-opacity:1;stroke-width:0"
+       cx="17.521503"
+       cy="23.162994"
+       id="circle96"
+       ry="2.3145258"
+       rx="2.4338791"
+       clip-path="none" />
+    <ellipse
+       style="fill:#ffffff;fill-opacity:1;stroke-width:0"
+       cx="7.5775957"
+       cy="21.636265"
+       id="circle98"
+       ry="1.9952809"
+       rx="2.0981717"
+       clip-path="none" />
+    <ellipse
+       style="fill:#ffffff;fill-opacity:1;stroke-width:0"
+       cx="2.1209345"
+       cy="15.046782"
+       id="circle100"
+       ry="1.9952809"
+       rx="2.0981717"
+       clip-path="none" />
+  </g>
+</svg>

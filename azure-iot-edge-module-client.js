@@ -28,7 +28,7 @@ module.exports = function(RED) {
 
 
     function createModuleClient(config) {
-        let node = this;
+        const node = this;
         RED.nodes.createNode(node, config);
 
         ModuleClient.fromEnvironment(Protocol, (err, client) => {
@@ -77,7 +77,7 @@ module.exports = function(RED) {
 
 
     function createModuleTwin(config) {
-        let node = this;
+        const node = this;
         RED.nodes.createNode(node, config);
 
         setStatus(node, statusEnum.disconnected);
@@ -98,7 +98,7 @@ module.exports = function(RED) {
 
                         node.on('input', (msg) => {
                             setStatus(node, statusEnum.reported);
-                            let messageJSON = null;
+                            var messageJSON = null;
 
                             if (typeof(msg.payload) != "string") {
                                 messageJSON = msg.payload;
@@ -133,7 +133,7 @@ module.exports = function(RED) {
 
 
     function createModuleInput(config) {
-        let node = this;
+        const node = this;
         node.input = config.input;
         RED.nodes.createNode(node, config);
 
@@ -160,7 +160,7 @@ module.exports = function(RED) {
 
 
     function createModuleOutput(config) {
-        let node = this;
+        const node = this;
         node.output = config.output;
         RED.nodes.createNode(node, config);
 
@@ -198,7 +198,7 @@ module.exports = function(RED) {
 
 
     function createModuleMethod(config) {
-        let node = this;
+        const node = this;
         node.method = config.method;
         RED.nodes.createNode(node, config);
 
@@ -207,7 +207,7 @@ module.exports = function(RED) {
         getCachedModuleClient()
             .then((client) => {
                 setStatus(node, statusEnum.connected);
-                let mthd = node.method;
+                var mthd = node.method;
                 node.log('Direct Method created: ' + mthd);
                 client.onMethod(mthd, (request, response) => {
                     setStatus(node, statusEnum.method);
@@ -230,7 +230,7 @@ module.exports = function(RED) {
 
                     getModuleMethodResponse(node)
                         .then((rspns) => {
-                            let responseBody;
+                            var responseBody;
                             if (typeof(rspns.response) != "string") {
                                 // Turn message object into string 
                                 responseBody = JSON.stringify(rspns.response);
@@ -256,7 +256,7 @@ module.exports = function(RED) {
 
                 // Set method response on input
                 node.on('input', (msg) => {
-                    let method = node.method;
+                    const method = node.method;
                     method_responses_array.push({
                         method: method,
                         response: msg.payload,
@@ -363,7 +363,7 @@ module.exports = function(RED) {
 
     function sendMessageToNodeOutput(client, node, inputName, msg) {
 
-        client.complete(msg, function (err) {
+        client.complete(msg, function(err) {
             if (err) {
                 node.log('error:' + err);
                 setStatus(node, statusEnum.error);
@@ -372,7 +372,7 @@ module.exports = function(RED) {
 
         if (inputName === node.input) {
             setStatus(node, statusEnum.received);
-            let message = JSON.parse(msg.getBytes().toString('utf8'));
+            var message = JSON.parse(msg.getBytes().toString('utf8'));
             if (message) {
                 node.log('Processed input message:' + inputName);
                 // send to node output
@@ -392,7 +392,7 @@ module.exports = function(RED) {
             output = "output";
         }
         node.log('Sending Message to Azure IoT Edge: ' + output + '\n   Payload: ' + JSON.stringify(message));
-        let msg = new Message(JSON.stringify(message));
+        var msg = new Message(JSON.stringify(message));
         msg.contentEncoding = "utf-8"
         msg.contentType = "application/json"
         client.sendOutputEvent(output, msg, function(err, res) {

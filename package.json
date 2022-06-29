@@ -14,9 +14,9 @@
     "description": "Module to connect to and interact with Azure IoT Edge using Node-Red",
     "bundleDependencies": [],
     "dependencies": {
-        "azure-iot-device": "^1.17.3",
-        "azure-iot-device-amqp": "1.13.*",
-        "azure-iot-device-mqtt": "1.15.*"
+        "azure-iot-device": "1.18.*",
+        "azure-iot-device-amqp": "1.14.*",
+        "azure-iot-device-mqtt": "1.16.*"
     },
     "deprecated": false,
     "engines": {

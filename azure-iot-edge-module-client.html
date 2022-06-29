@@ -1,12 +1,13 @@
 <script type="text/javascript">
     RED.nodes.registerType('moduleclient', {
         category: 'config',
-        color: '#a6bbcf',
+        color: '#82e3aa',
         defaults: {
             module: {
                 value: ""
             }
         },
+        icon: "iot-edge-module-logo.svg",
         label: function() {
             return "Module Client";
         }
@@ -26,7 +27,7 @@
 <script type="text/javascript">
     RED.nodes.registerType('moduletwin', {
         category: 'Azure IoT Edge',
-        color: '#a6bbcf',
+        color: '#82e3aa',
         defaults: {
             client: {
                 value: "",
@@ -36,7 +37,7 @@
         },
         inputs: 1,
         outputs: 1,
-        icon: "azureiotedge.png",
+        icon: "iot-edge-module-logo.svg",
         label: function() {
             return "Module Twin";
         },
@@ -61,7 +62,7 @@
 <script type="text/javascript">
     RED.nodes.registerType('moduleinput', {
         category: 'Azure IoT Edge',
-        color: '#a6bbcf',
+        color: '#82e3aa',
         defaults: {
             client: {
                 value: "",
@@ -75,7 +76,7 @@
         },
         inputs: 0,
         outputs: 1,
-        icon: "azureiotedge.png",
+        icon: "iot-edge-module-logo.svg",
         label: function() {
             return "Module Input: " + this.input;
         },
@@ -104,7 +105,7 @@
 <script type="text/javascript">
     RED.nodes.registerType('moduleoutput', {
         category: 'Azure IoT Edge',
-        color: '#a6bbcf',
+        color: '#82e3aa',
         defaults: {
             client: {
                 value: "",
@@ -118,7 +119,7 @@
         },
         inputs: 1,
         outputs: 0,
-        icon: "azureiotedge.png",
+        icon: "iot-edge-module-logo.svg",
         label: function() {
             return "Module Output: " + this.output;
         },
@@ -147,7 +148,7 @@
 <script type="text/javascript">
     RED.nodes.registerType('modulemethod', {
         category: 'Azure IoT Edge',
-        color: '#a6bbcf',
+        color: '#82e3aa',
         defaults: {
             client: {
                 value: "",
@@ -161,7 +162,7 @@
         },
         inputs: 1,
         outputs: 1,
-        icon: "azureiotedge.png",
+        icon: "iot-edge-module-logo.svg",
         label: function() {
             return "Module Method: " + this.method;
         },

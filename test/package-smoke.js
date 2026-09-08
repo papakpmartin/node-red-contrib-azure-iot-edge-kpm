@@ -18,6 +18,7 @@ try {
     const files = new Set(packResult[0].files.map((file) => file.path));
     const required = [
         'LICENSE.md',
+        'CHANGELOG.md',
         'README.md',
         'azure-iot-edge-device-client.html',
         'azure-iot-edge-device-client.js',

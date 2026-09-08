@@ -27,6 +27,45 @@ test('ships a matching editor file for every runtime entry', () => {
     }
 });
 
+test('runtime, editor, and example use the released node types', () => {
+    const runtimeTypes = new Set();
+    const editorTypes = new Set();
+    for (const relativeRuntimePath of Object.values(manifest['node-red'].nodes)) {
+        const runtimePath = path.join(root, relativeRuntimePath);
+        const editorPath = runtimePath.replace(/\.js$/, '.html');
+        const runtime = fs.readFileSync(runtimePath, 'utf8');
+        const editor = fs.readFileSync(editorPath, 'utf8');
+
+        for (const match of runtime.matchAll(/RED\.nodes\.registerType\(['"]([^'"]+)/g)) {
+            runtimeTypes.add(match[1]);
+        }
+        for (const match of editor.matchAll(/RED\.nodes\.registerType\(['"]([^'"]+)/g)) {
+            editorTypes.add(match[1]);
+        }
+    }
+
+    const expected = [
+        'device-client',
+        'device-twin',
+        'moduleclient',
+        'moduleinput',
+        'modulemethod',
+        'moduleoutput',
+        'moduletwin'
+    ];
+    assert.deepEqual(Array.from(runtimeTypes).sort(), expected);
+    assert.deepEqual(Array.from(editorTypes).sort(), expected);
+
+    const example = JSON.parse(fs.readFileSync(path.join(root, 'examples/example.json'), 'utf8'));
+    const customTypes = new Set(expected);
+    for (const node of example) {
+        if (customTypes.has(node.type) && node.type !== 'moduleclient') {
+            assert.equal(typeof node.client, 'string');
+            assert.notEqual(node.client, '');
+        }
+    }
+});
+
 test('keeps the released package identity during modernization', () => {
     assert.equal(manifest.name, 'node-red-contrib-azure-iot-edge-kpm');
     assert.equal(manifest.version, '1.0.0-beta.1');

@@ -314,10 +314,8 @@ module.exports = function(RED) {
                     releaseIdentityIfSafe();
                 },
                 () => {
-                    if (listeners) {
-                        candidate.removeListener('error', listeners.onError);
-                        clientListeners.delete(candidate);
-                    }
+                    // Keep the error listener attached while the client may still
+                    // be alive. A process restart is required after uncertain close.
                 }
             );
 
@@ -332,12 +330,12 @@ module.exports = function(RED) {
                 })
             ]).finally(() => clearTimeout(timeout));
 
-            actual.finally(() => {
+            actual.then(() => {
                 while (retainedTwinErrors.length > 0) {
                     const retained = retainedTwinErrors.pop();
                     retained.twin.removeListener('error', retained.onError);
                 }
-            }).catch(() => {});
+            }, () => {});
 
             closingClients.set(candidate, { actual, bounded });
             activeClientCloses.add(bounded);
@@ -587,9 +585,14 @@ module.exports = function(RED) {
                 : '';
             node.warn(`Device client disconnected${reason}`);
 
-            const recovery = closeClient(disconnectedClient)
-                .catch((error) => node.warn(asError(error).message))
-                .then(() => connectLoop(1));
+            const recovery = closeClient(disconnectedClient).then(
+                () => connectLoop(1),
+                (error) => {
+                    setOwnerState('error', statuses.error);
+                    setChildrenStatus(statuses.error);
+                    throw new Error('Device client could not close safely; restart Node-RED before reconnecting', { cause: error });
+                }
+            );
             startPromise = recovery;
             recovery.then(
                 () => {

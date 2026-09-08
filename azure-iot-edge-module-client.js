@@ -361,15 +361,23 @@ module.exports = function (RED) {
         this._setConsumerStatus(statusEnum.disconnected);
         const pendingResponses = this._terminatePending(null, 503, { error: 'Module client unavailable' });
 
-        Promise.allSettled(pendingResponses.concat(this._closeSdkClient(client)))
-            .finally(() => {
+        Promise.allSettled(pendingResponses);
+        this._closeSdkClient(client).then(
+            () => {
                 if (this.state !== 'closing' && this.state !== 'closed') {
                     if (result) {
                         this._reportError('Module client disconnected', result);
                     }
                     this._scheduleRetry();
                 }
-            });
+            },
+            (error) => {
+                if (this.state !== 'closing' && this.state !== 'closed') {
+                    this.state = 'error';
+                    this._reportError('Module client could not close safely; restart Node-RED before reconnecting', error);
+                }
+            }
+        );
     };
 
     ModuleClientOwner.prototype._reportError = function (prefix, error) {
@@ -869,7 +877,7 @@ module.exports = function (RED) {
             this.unsettledClientCloses.delete(client);
             this._releaseActiveOwner();
         }, () => {});
-        const cleanup = actualClose.finally(() => {
+        const cleanup = actualClose.then(() => {
             const authentication = this.authenticationProviders.get(client);
             if (authentication) {
                 authentication.provider.removeListener('error', authentication.providerError);

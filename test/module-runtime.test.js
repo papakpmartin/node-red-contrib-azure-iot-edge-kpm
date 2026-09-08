@@ -32,6 +32,7 @@ class FakeModuleClient extends EventEmitter {
         this.methods = new Map();
         this.sent = [];
         this.twin = new FakeTwin();
+        this.closeError = null;
     }
 
     open(done) {
@@ -39,8 +40,12 @@ class FakeModuleClient extends EventEmitter {
     }
 
     close(done) {
-        this.closed = true;
-        setImmediate(() => done());
+        if (this.closeError) {
+            setImmediate(() => done(this.closeError));
+        } else {
+            this.closed = true;
+            setImmediate(() => done());
+        }
     }
 
     getTwin(done) {
@@ -222,4 +227,39 @@ test('workload authentication errors close the client and start recovery', async
     providers[0].emit('error', new Error('workload signing failed'));
     await waitFor(() => clients[0].closed, 'failed workload client was not closed');
     await waitFor(() => clients.length >= 2, 'workload client recovery did not start', 3000);
+});
+
+test('module recovery does not overlap a client whose close failed', async (t) => {
+    const originalFromEnvironment = azure.ModuleClient.fromEnvironment;
+    const originalConnectionString = process.env.EdgeHubConnectionString;
+    process.env.EdgeHubConnectionString = 'HostName=test;DeviceId=device;ModuleId=module;SharedAccessKey=test';
+    const clients = [];
+    azure.ModuleClient.fromEnvironment = async () => {
+        const client = new FakeModuleClient();
+        client.closeError = new Error('close failed');
+        clients.push(client);
+        return client;
+    };
+    delete require.cache[require.resolve('../azure-iot-edge-module-client')];
+    const isolatedModuleNodes = require('../azure-iot-edge-module-client');
+
+    await new Promise((resolve, reject) => helper.startServer((error) => error ? reject(error) : resolve()));
+    t.after(async () => {
+        await helper.unload();
+        await new Promise((resolve) => helper.stopServer(resolve));
+        azure.ModuleClient.fromEnvironment = originalFromEnvironment;
+        if (originalConnectionString === undefined) {
+            delete process.env.EdgeHubConnectionString;
+        } else {
+            process.env.EdgeHubConnectionString = originalConnectionString;
+        }
+    });
+
+    await helper.load(isolatedModuleNodes, [{ id: 'client', type: 'moduleclient' }]);
+    await waitFor(() => clients.length === 1, 'module client was not created');
+    clients[0].emit('disconnect', new Error('connection lost'));
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+
+    assert.equal(clients.length, 1, 'a replacement client overlapped the unresolved client');
+    assert.ok(clients[0].listenerCount('error') > 0, 'unresolved client lost its error listener');
 });

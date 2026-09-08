@@ -24,7 +24,8 @@
     },
     "scripts": {
         "lint": "node --check azure-iot-edge-module-client.js && node --check azure-iot-edge-device-client.js",
-        "test": "node --test --test-concurrency=1 test/*.test.js"
+        "test": "node --test --test-concurrency=1 test/*.test.js",
+        "test:package": "node test/package-smoke.js"
     },
     "devDependencies": {
         "node-red": "4.1.14",

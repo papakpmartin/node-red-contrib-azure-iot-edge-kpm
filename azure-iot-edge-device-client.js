@@ -313,7 +313,7 @@ module.exports = function(RED) {
                 })
             ]).finally(() => clearTimeout(timeout));
 
-            bounded.finally(() => {
+            actual.finally(() => {
                 while (retainedTwinErrors.length > 0) {
                     const retained = retainedTwinErrors.pop();
                     retained.twin.removeListener('error', retained.onError);

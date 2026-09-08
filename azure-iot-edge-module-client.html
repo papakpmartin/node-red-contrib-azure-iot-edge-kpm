@@ -19,8 +19,7 @@
 </script>
 
 <script type="text/x-red" data-help-name="moduleclient">
-    <p>This moduleclient configuration node automatically creates the connection with Azure IoT Edge running on the host system. To do this, the <code>IOTEDGE_WORKLOADURI</code> environment variable needs to be available, which is normally true when running
-        within Azure IoT Edge.</p>
+    <p>This configuration node connects to Azure IoT Edge using the module identity and workload environment supplied by the Edge runtime. Only one Module Client configuration can be active in a Node-RED runtime.</p>
     <p>This configuration will be used by the other nodes in this package to interact with Azure IoT Hub.</p>
 </script>
 
@@ -55,7 +54,7 @@
 </script>
 
 <script type="text/x-red" data-help-name="moduletwin">
-    <p>Azure IoT Edge Module Twin receives desired properties changes and sends reported properties to Azure IoT Edge using Node-Red. Node-Red needs to run as a module in Azure IoT Edge for this nod to work.</p>
+    <p>Azure IoT Edge Module Twin receives desired properties changes and sends reported properties to Azure IoT Edge using Node-RED. Node-RED needs to run as a module in Azure IoT Edge for this node to work.</p>
     <p>The input of the node enables sending reported properties to the module twin and the output of the node represents the changes to the desired properties.</p>
 </script>
 
@@ -186,6 +185,5 @@
 <script type="text/x-red" data-help-name="modulemethod">
     <p>Azure IoT Edge Module Method node enables you to respond to methods sent by Azure IoT Hub by means of running in a Node-RED instance that is running as a module in an Azure IoT Edge deployment.</p>
     <p>The "method" setting will determine what method request this node is listening for and expecting to respond to. This will be availble at this node’s output.</p>
-    <p>This node’s input is what will be sent as the return to the IoT Hub. The input message must have a `msg.status` which is set to an appropriate HTTP status code, and a `msg.payload` which can be any valid JSON object. No other properties on `msg` will
-        be sent.</p>
+    <p>The request message includes <code>msg.requestId</code>. Preserve that value through the flow and return it with <code>msg.status</code> (an HTTP-style status from 100 through 599) and a JSON-compatible <code>msg.payload</code>. Requests time out after 25 seconds.</p>
 </script>

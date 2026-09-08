@@ -861,11 +861,8 @@ module.exports = function (RED) {
             return existing;
         }
 
-        const closing = withTimeout(
-            callbackOperation((done) => client.close(done)),
-            SDK_CLOSE_TIMEOUT_MS,
-            'Azure Module Client close timed out'
-        ).finally(() => {
+        const actualClose = callbackOperation((done) => client.close(done));
+        const cleanup = actualClose.finally(() => {
             const authentication = this.authenticationProviders.get(client);
             if (authentication) {
                 authentication.provider.removeListener('error', authentication.providerError);
@@ -874,6 +871,13 @@ module.exports = function (RED) {
             }
             this._detachClientListeners(client);
             this._clearRetainedTwinErrors();
+        });
+        cleanup.catch(() => {});
+        const closing = withTimeout(
+            actualClose,
+            SDK_CLOSE_TIMEOUT_MS,
+            'Azure Module Client close timed out'
+        ).finally(() => {
             this.closingClients.delete(client);
         });
         closing.then(() => this.closedClients.add(client), () => {});

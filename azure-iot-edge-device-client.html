@@ -16,18 +16,16 @@
 
 <script type="text/x-red" data-template-name="device-client">
     <p>
-        You do not need to set any properties for this client to be configured. Just hit “Update” and a Device Client will be created using the environment variables available to this IoT Egde Module and the certificates made available to this module by the IoT
-        Edge Module's Container Configuration.
+        You do not need to set any properties for this client. It creates a direct IoT Hub device connection using the configured X.509 identity and certificate files.
     </p>
     <p>
-        For information concerning how to properly configure the IoT Egde Module’s Deployment’s environment variables and container configuration options, please see the README.
+        Configure <code>IOTEDGE_IOTHUBHOSTNAME</code>, <code>IOTEDGE_DEVICEID</code>, <code>PATH_TO_CERTIFICATE_FILE</code>, and <code>PATH_TO_KEY_FILE</code>. See the README for deployment and rotation guidance.
     </p>
 </script>
 
 <script type="text/x-red" data-help-name="device-client">
     <p>
-        This Device Client configuration node automatically creates the connection with Azure IoT Edge running on the host system. To do this, the <code>IOTEDGE_WORKLOADURI</code> environment variable needs to be available, which is normally true when
-        running within Azure IoT Edge.
+        This configuration node connects directly to Azure IoT Hub as the configured device identity using an X.509 certificate and private key. It is separate from the Edge module workload identity.
     </p>
     <p>
         This configuration will be used by the other nodes in this package to interact with Azure IoT Hub.
@@ -66,5 +64,5 @@
 
 <script type="text/x-red" data-help-name="device-twin">
     <p>Azure IoT Edge Device Twin receives desired properties changes and sends reported properties to Azure IoT Edge using Node-RED. Node-RED needs to run as a module in Azure IoT Edge for this node to work.</p>
-    <p>The input of the node enables sending reported properties to the module twin and the output of the node represents the changes to the desired properties.</p>
+    <p>The input of the node sends reported properties to the device twin and the output represents changes to desired properties.</p>
 </script>

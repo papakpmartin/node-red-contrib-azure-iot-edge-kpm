@@ -1,0 +1,6 @@
+.github/
+.DS_Store
+.gitignore
+.nvmrc
+docs/modernization-plan.md
+test/

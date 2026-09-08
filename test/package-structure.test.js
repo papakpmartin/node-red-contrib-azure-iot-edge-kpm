@@ -31,3 +31,14 @@ test('keeps the released package identity during modernization', () => {
     assert.equal(manifest.name, 'node-red-contrib-azure-iot-edge-kpm');
     assert.equal(manifest.license, 'MIT');
 });
+
+test('the example preserves correlated method responses', () => {
+    const example = JSON.parse(fs.readFileSync(path.join(root, 'examples/example.json'), 'utf8'));
+    const method = example.find((node) => node.type === 'modulemethod');
+    const response = example.find((node) => node.type === 'function' && node.name === 'response msg');
+
+    assert.ok(method, 'module method example is missing');
+    assert.ok(response, 'module method response function is missing');
+    assert.match(response.func, /msg\.status\s*=\s*200/);
+    assert.doesNotMatch(response.func, /return\s+response/);
+});

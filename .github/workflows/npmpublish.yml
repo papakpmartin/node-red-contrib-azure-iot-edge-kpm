@@ -12,10 +12,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - run: npm install --global npm@10.9.4
       - run: npm ci
       - run: npm run lint
       - run: npm test
       - run: npm run test:package
+      - name: Pack tested artifact
+        run: npm pack --ignore-scripts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: npm-package
+          path: node-red-contrib-azure-iot-edge-kpm-*.tgz
+          if-no-files-found: error
 
   publish-npm:
     needs: build
@@ -26,13 +34,20 @@ jobs:
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org/
-      - run: npm ci
+      - run: npm install --global npm@10.9.4
+      - uses: actions/download-artifact@v4
+        with:
+          name: npm-package
+          path: dist
+      - name: Verify release version
+        run: |
+          test "v$(node -p "require('./package.json').version")" = "${GITHUB_REF_NAME}"
       - name: Publish package
         run: |
           if node -e "process.exit(require('./package.json').version.includes('-') ? 0 : 1)"; then
-            npm publish --tag next
+            npm publish dist/*.tgz --tag next
           else
-            npm publish
+            npm publish dist/*.tgz
           fi
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}

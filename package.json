@@ -15,9 +15,8 @@
     "packageManager": "npm@10.9.4",
     "bundleDependencies": [],
     "dependencies": {
-        "azure-iot-device": "1.18.*",
-        "azure-iot-device-amqp": "1.14.*",
-        "azure-iot-device-mqtt": "1.16.*"
+        "azure-iot-device": "1.18.4",
+        "azure-iot-device-mqtt": "1.16.4"
     },
     "deprecated": false,
     "engines": {

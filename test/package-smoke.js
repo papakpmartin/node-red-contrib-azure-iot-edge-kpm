@@ -23,6 +23,8 @@ try {
         'azure-iot-edge-device-client.js',
         'azure-iot-edge-module-client.html',
         'azure-iot-edge-module-client.js',
+        'docs/dependency-risk.md',
+        'docs/modernization-plan.md',
         'examples/example.json',
         'package.json'
     ];

@@ -15,6 +15,7 @@ module.exports = function(RED) {
     const CLOSE_TIMEOUT_MS = 10000;
     const EXPIRY_WARNING_MS = 30 * 24 * 60 * 60 * 1000;
     const MAX_PENDING_OPERATIONS = 100;
+    const activeIdentities = new Map();
 
     const statuses = {
         connecting: { fill: 'yellow', shape: 'ring', text: 'Connecting' },
@@ -99,7 +100,9 @@ module.exports = function(RED) {
         const clientListeners = new WeakMap();
         const closingClients = new WeakMap();
         const activeClientCloses = new Set();
+        const unsettledClientCloses = new Set();
         const pendingOperations = new Set();
+        let identityKey = null;
         let rejectShutdown;
         const shutdownPromise = new Promise((resolve, reject) => {
             rejectShutdown = reject;
@@ -218,6 +221,19 @@ module.exports = function(RED) {
                 node.warn(`The X.509 certificate expires within 30 days (${new Date(validTo).toISOString()})`);
             }
 
+            const expectedCommonName = `CN=${deviceId}`;
+            if (!certificate.subject.split('\n').includes(expectedCommonName)) {
+                node.warn(`The X.509 certificate subject does not contain ${expectedCommonName}; CA-signed IoT Hub identities require a matching common name`);
+            }
+
+            const candidateIdentityKey = `${hostname}\n${deviceId}`;
+            const existingOwner = activeIdentities.get(candidateIdentityKey);
+            if (existingOwner && existingOwner !== node) {
+                throw configurationError('Another Device Client configuration is already using this IoT Hub device identity');
+            }
+            activeIdentities.set(candidateIdentityKey, node);
+            identityKey = candidateIdentityKey;
+
             return {
                 connectionString: `HostName=${hostname};DeviceId=${deviceId};x509=true`,
                 options: {
@@ -287,12 +303,15 @@ module.exports = function(RED) {
             }
 
             const actual = callbackOperation((done) => candidate.close(done));
+            unsettledClientCloses.add(candidate);
             actual.then(
                 () => {
+                    unsettledClientCloses.delete(candidate);
                     if (listeners) {
                         candidate.removeListener('error', listeners.onError);
                         clientListeners.delete(candidate);
                     }
+                    releaseIdentityIfSafe();
                 },
                 () => {
                     if (listeners) {
@@ -327,6 +346,13 @@ module.exports = function(RED) {
                 () => activeClientCloses.delete(bounded)
             );
             return bounded;
+        }
+
+        function releaseIdentityIfSafe() {
+            if (state === 'closed' && unsettledClientCloses.size === 0 && identityKey && activeIdentities.get(identityKey) === node) {
+                activeIdentities.delete(identityKey);
+                identityKey = null;
+            }
         }
 
         function waitForRetry(attempt) {
@@ -403,6 +429,10 @@ module.exports = function(RED) {
                     setChildrenStatus(statuses.error);
                     node.error(asError(error, 'Unable to start the device client'));
                     if (error.code === 'DEVICE_CONFIGURATION_ERROR') {
+                        if (!candidate && identityKey && activeIdentities.get(identityKey) === node) {
+                            activeIdentities.delete(identityKey);
+                            identityKey = null;
+                        }
                         throw error;
                     }
 
@@ -676,6 +706,7 @@ module.exports = function(RED) {
                 state = 'closed';
                 node.connected = false;
                 setStatus(node, statuses.disconnected);
+                releaseIdentityIfSafe();
             })();
 
             return closePromise;

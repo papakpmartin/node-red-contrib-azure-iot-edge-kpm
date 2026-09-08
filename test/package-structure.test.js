@@ -29,6 +29,7 @@ test('ships a matching editor file for every runtime entry', () => {
 
 test('keeps the released package identity during modernization', () => {
     assert.equal(manifest.name, 'node-red-contrib-azure-iot-edge-kpm');
+    assert.equal(manifest.version, '1.0.0-beta.1');
     assert.equal(manifest.license, 'MIT');
 });
 

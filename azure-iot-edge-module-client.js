@@ -163,6 +163,7 @@ module.exports = function (RED) {
         this.authenticationProviders = new WeakMap();
         this.closingClients = new WeakMap();
         this.closedClients = new WeakSet();
+        this.unsettledClientCloses = new Set();
         this.closePromise = null;
         this.lastErrorText = '';
         this.lastErrorTime = 0;
@@ -827,7 +828,7 @@ module.exports = function (RED) {
         this.pendingMethods.delete(msg.requestId);
         clearTimeout(pending.timer);
         setStatus(consumer.node, statusEnum.response);
-        await this._sendMethodResponse(pending.response, msg.status, msg.payload);
+        await this._trackOperation(() => this._sendMethodResponse(pending.response, msg.status, msg.payload));
         if (!consumer.closed && this.state === 'ready') {
             setStatus(consumer.node, statusEnum.connected);
         }
@@ -862,6 +863,12 @@ module.exports = function (RED) {
         }
 
         const actualClose = callbackOperation((done) => client.close(done));
+        this.unsettledClientCloses.add(client);
+        actualClose.then(() => {
+            this.closedClients.add(client);
+            this.unsettledClientCloses.delete(client);
+            this._releaseActiveOwner();
+        }, () => {});
         const cleanup = actualClose.finally(() => {
             const authentication = this.authenticationProviders.get(client);
             if (authentication) {
@@ -880,9 +887,14 @@ module.exports = function (RED) {
         ).finally(() => {
             this.closingClients.delete(client);
         });
-        closing.then(() => this.closedClients.add(client), () => {});
         this.closingClients.set(client, closing);
         return closing;
+    };
+
+    ModuleClientOwner.prototype._releaseActiveOwner = function () {
+        if (this.state === 'closed' && this.unsettledClientCloses.size === 0 && activeOwner === this) {
+            activeOwner = null;
+        }
     };
 
     ModuleClientOwner.prototype.close = function () {
@@ -931,9 +943,7 @@ module.exports = function (RED) {
                 this._detachClientListeners(client);
             }
             this.state = 'closed';
-            if (activeOwner === this) {
-                activeOwner = null;
-            }
+            this._releaseActiveOwner();
         });
         return this.closePromise;
     };

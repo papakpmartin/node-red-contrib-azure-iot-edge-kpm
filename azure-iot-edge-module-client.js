@@ -2,11 +2,7 @@ module.exports = function (RED) {
     'use strict';
 
     const { randomUUID } = require('node:crypto');
-    const {
-        IotEdgeAuthenticationProvider,
-        Message,
-        ModuleClient
-    } = require('azure-iot-device');
+    const { Message, ModuleClient } = require('azure-iot-device');
     const { Mqtt } = require('azure-iot-device-mqtt');
 
     const METHOD_TIMEOUT_MS = 25000;
@@ -160,7 +156,6 @@ module.exports = function (RED) {
         this.twinListeners = null;
         this.retainedTwinErrors = [];
         this.clientListeners = new WeakMap();
-        this.authenticationProviders = new WeakMap();
         this.closingClients = new WeakMap();
         this.closedClients = new WeakSet();
         this.unsettledClientCloses = new Set();
@@ -195,7 +190,7 @@ module.exports = function (RED) {
     ModuleClientOwner.prototype._connect = async function (generation) {
         let client;
         try {
-            client = await this._createClient(generation);
+            client = await this._createClient();
             if (!client || typeof client.open !== 'function') {
                 throw new TypeError('ModuleClient.fromEnvironment did not return a client');
             }
@@ -236,44 +231,12 @@ module.exports = function (RED) {
         }
     };
 
-    ModuleClientOwner.prototype._createClient = async function (generation) {
-        if (process.env.EdgeHubConnectionString || process.env.IotHubConnectionString) {
-            return ModuleClient.fromEnvironment(Mqtt);
-        }
-
-        const environmentError = ModuleClient.validateEnvironment();
-        if (environmentError) {
-            throw environmentError;
-        }
-        const provider = new IotEdgeAuthenticationProvider({
-            workloadUri: process.env.IOTEDGE_WORKLOADURI,
-            deviceId: process.env.IOTEDGE_DEVICEID,
-            moduleId: process.env.IOTEDGE_MODULEID,
-            iothubHostName: process.env.IOTEDGE_IOTHUBHOSTNAME,
-            authScheme: process.env.IOTEDGE_AUTHSCHEME,
-            gatewayHostName: process.env.IOTEDGE_GATEWAYHOSTNAME,
-            generationId: process.env.IOTEDGE_MODULEGENERATIONID
-        });
-        const providerError = (error) => {
-            this._reportError('Module authentication renewal failed', error);
-            const currentClient = this.client;
-            if (currentClient && this.activeGeneration === generation) {
-                this._recoverClient(currentClient, generation, error);
-            }
-        };
-        provider.on('error', providerError);
-
-        try {
-            const ca = await callbackOperation((done) => provider.getTrustBundle(done));
-            const client = ModuleClient.fromAuthenticationProvider(provider, Mqtt);
-            this.authenticationProviders.set(client, { provider, providerError });
-            await callbackOperation((done) => client.setOptions({ ca }, done));
-            return client;
-        } catch (error) {
-            provider.removeListener('error', providerError);
-            provider.stop();
-            throw error;
-        }
+    ModuleClientOwner.prototype._createClient = function () {
+        const mode = process.env.EdgeHubConnectionString || process.env.IotHubConnectionString
+            ? 'environment connection string'
+            : 'IoT Edge workload identity';
+        this.node.log('Creating Module Client using ' + mode);
+        return callbackOperation((done) => ModuleClient.fromEnvironment(Mqtt, done));
     };
 
     ModuleClientOwner.prototype._isCurrentAttempt = function (generation) {
@@ -878,12 +841,6 @@ module.exports = function (RED) {
             this._releaseActiveOwner();
         }, () => {});
         const cleanup = actualClose.then(() => {
-            const authentication = this.authenticationProviders.get(client);
-            if (authentication) {
-                authentication.provider.removeListener('error', authentication.providerError);
-                authentication.provider.stop();
-                this.authenticationProviders.delete(client);
-            }
             this._detachClientListeners(client);
             this._clearRetainedTwinErrors();
         });

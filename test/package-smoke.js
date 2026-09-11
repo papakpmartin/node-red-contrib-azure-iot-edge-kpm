@@ -35,6 +35,7 @@ try {
     }
     assert.ok(!files.has('azure-iot-edge-config.js'), 'obsolete config runtime was packaged');
     assert.ok(!Array.from(files).some((file) => file.startsWith('test/')), 'test files were packaged');
+    assert.ok(!Array.from(files).some((file) => file.endsWith('.tgz')), 'nested npm tarball was packaged');
 } finally {
     fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 }

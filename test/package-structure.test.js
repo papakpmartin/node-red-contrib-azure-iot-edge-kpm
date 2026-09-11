@@ -68,7 +68,7 @@ test('runtime, editor, and example use the released node types', () => {
 
 test('keeps the released package identity during modernization', () => {
     assert.equal(manifest.name, 'node-red-contrib-azure-iot-edge-kpm');
-    assert.equal(manifest.version, '1.0.0-beta.1');
+    assert.equal(manifest.version, '1.0.0-beta.2');
     assert.equal(manifest.license, 'MIT');
 });
 

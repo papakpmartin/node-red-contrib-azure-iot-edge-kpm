@@ -125,6 +125,8 @@ The container trust store must trust the current Azure IoT Hub server roots. Do 
 
 The Module Client normally uses the IoT Edge workload environment and runtime-managed SAS tokens. Required variables include `IOTEDGE_WORKLOADURI`, `IOTEDGE_DEVICEID`, `IOTEDGE_MODULEID`, `IOTEDGE_MODULEGENERATIONID`, `IOTEDGE_IOTHUBHOSTNAME`, and `IOTEDGE_AUTHSCHEME=sasToken`.
 
+Client creation delegates to Azure's official `ModuleClient.fromEnvironment` factory so workload signing, gateway selection, and trust-bundle configuration follow the SDK implementation.
+
 For compatibility, the Azure SDK's `EdgeHubConnectionString` and `IotHubConnectionString` environment overrides are retained when present. Do not set them accidentally: they take precedence over workload authentication. Only one Module Client configuration may be active in a Node-RED process.
 
 An IoT Edge host provisioned with X.509 still normally gives modules a workload-managed SAS identity. Do not mount the host's private identity key into Node-RED merely to create a Module Client.

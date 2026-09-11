@@ -2,7 +2,7 @@
 
 Assessment date: September 8, 2026.
 
-Candidate: `1.0.0-beta.1`, Node.js 22, Node-RED 4, `azure-iot-device@1.18.4`,
+Candidate: `1.0.0-beta.2`, Node.js 22, Node-RED 4, `azure-iot-device@1.18.4`,
 and `azure-iot-device-mqtt@1.16.4`.
 
 `npm audit --omit=dev` reports no critical production vulnerability after the

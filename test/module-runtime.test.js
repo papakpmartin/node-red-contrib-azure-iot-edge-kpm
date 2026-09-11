@@ -153,55 +153,18 @@ test('module nodes preserve released types and route messages through one config
     assert.deepEqual(methodResponse, { status: 200, payload: { accepted: true } });
 });
 
-test('workload authentication errors close the client and start recovery', async (t) => {
-    const originalProvider = azure.IotEdgeAuthenticationProvider;
-    const originalFromAuthenticationProvider = azure.ModuleClient.fromAuthenticationProvider;
-    const originalValidateEnvironment = azure.ModuleClient.validateEnvironment;
-    const originalEnvironment = {};
-    const keys = [
-        'EdgeHubConnectionString',
-        'IotHubConnectionString',
-        'IOTEDGE_WORKLOADURI',
-        'IOTEDGE_DEVICEID',
-        'IOTEDGE_MODULEID',
-        'IOTEDGE_IOTHUBHOSTNAME',
-        'IOTEDGE_AUTHSCHEME',
-        'IOTEDGE_MODULEGENERATIONID'
-    ];
-    for (const key of keys) {
-        originalEnvironment[key] = process.env[key];
-    }
+test('module client delegates environment and workload authentication to the Azure factory', async (t) => {
+    const originalFromEnvironment = azure.ModuleClient.fromEnvironment;
+    const originalEdgeConnectionString = process.env.EdgeHubConnectionString;
+    const originalIotHubConnectionString = process.env.IotHubConnectionString;
     delete process.env.EdgeHubConnectionString;
     delete process.env.IotHubConnectionString;
-    process.env.IOTEDGE_WORKLOADURI = 'unix:///tmp/workload.sock';
-    process.env.IOTEDGE_DEVICEID = 'device';
-    process.env.IOTEDGE_MODULEID = 'module';
-    process.env.IOTEDGE_IOTHUBHOSTNAME = 'test.azure-devices.net';
-    process.env.IOTEDGE_AUTHSCHEME = 'sasToken';
-    process.env.IOTEDGE_MODULEGENERATIONID = 'generation';
 
-    const providers = [];
-    class FakeProvider extends EventEmitter {
-        constructor() {
-            super();
-            providers.push(this);
-        }
-
-        getTrustBundle(done) {
-            setImmediate(() => done(null, 'test-ca'));
-        }
-
-        stop() {}
-    }
-
-    const clients = [];
-    azure.IotEdgeAuthenticationProvider = FakeProvider;
-    azure.ModuleClient.validateEnvironment = () => null;
-    azure.ModuleClient.fromAuthenticationProvider = () => {
-        const client = new FakeModuleClient();
-        client.setOptions = (options, done) => setImmediate(() => done());
-        clients.push(client);
-        return client;
+    const client = new FakeModuleClient();
+    let factoryCalls = 0;
+    azure.ModuleClient.fromEnvironment = (protocol, done) => {
+        factoryCalls += 1;
+        setImmediate(() => done(null, client));
     };
     delete require.cache[require.resolve('../azure-iot-edge-module-client')];
     const workloadNodes = require('../azure-iot-edge-module-client');
@@ -210,23 +173,21 @@ test('workload authentication errors close the client and start recovery', async
     t.after(async () => {
         await helper.unload();
         await new Promise((resolve) => helper.stopServer(resolve));
-        azure.IotEdgeAuthenticationProvider = originalProvider;
-        azure.ModuleClient.fromAuthenticationProvider = originalFromAuthenticationProvider;
-        azure.ModuleClient.validateEnvironment = originalValidateEnvironment;
-        for (const [key, value] of Object.entries(originalEnvironment)) {
-            if (value === undefined) {
-                delete process.env[key];
-            } else {
-                process.env[key] = value;
-            }
+        azure.ModuleClient.fromEnvironment = originalFromEnvironment;
+        if (originalEdgeConnectionString === undefined) {
+            delete process.env.EdgeHubConnectionString;
+        } else {
+            process.env.EdgeHubConnectionString = originalEdgeConnectionString;
+        }
+        if (originalIotHubConnectionString === undefined) {
+            delete process.env.IotHubConnectionString;
+        } else {
+            process.env.IotHubConnectionString = originalIotHubConnectionString;
         }
     });
 
     await helper.load(workloadNodes, [{ id: 'client', type: 'moduleclient' }]);
-    await waitFor(() => clients.length === 1, 'workload client was not created');
-    providers[0].emit('error', new Error('workload signing failed'));
-    await waitFor(() => clients[0].closed, 'failed workload client was not closed');
-    await waitFor(() => clients.length >= 2, 'workload client recovery did not start', 3000);
+    await waitFor(() => factoryCalls === 1 && client.listenerCount('error') === 1, 'Azure environment factory was not used');
 });
 
 test('module recovery does not overlap a client whose close failed', async (t) => {

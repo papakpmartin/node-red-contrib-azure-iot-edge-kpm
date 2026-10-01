@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0-beta.3
+
+- Restore one Node-RED manifest entry per runtime/editor pair so the combined
+  Module Client node set is loaded only once.
+- Add source and packed-artifact checks that reject duplicate Node-RED entry
+  points.
+
 ## 1.0.0-beta.2
 
 - Restore Azure's official `ModuleClient.fromEnvironment` construction path for

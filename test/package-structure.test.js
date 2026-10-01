@@ -14,6 +14,17 @@ test('declares the initial runtime support scope', () => {
     assert.equal(manifest.devDependencies['node-red'], '4.1.14');
 });
 
+test('declares each Node-RED entry point exactly once', () => {
+    const entries = manifest['node-red'].nodes;
+    const runtimePaths = Object.values(entries);
+
+    assert.deepEqual(entries, {
+        'Azure IoT Edge Module Client': 'azure-iot-edge-module-client.js',
+        'Azure IoT Edge Device Client': 'azure-iot-edge-device-client.js'
+    });
+    assert.equal(new Set(runtimePaths).size, runtimePaths.length);
+});
+
 test('ships a matching editor file for every runtime entry', () => {
     for (const relativeRuntimePath of Object.values(manifest['node-red'].nodes)) {
         const runtimePath = path.join(root, relativeRuntimePath);
